@@ -42,18 +42,76 @@ class InstallerConfig:
             os.system("wget $( echo http://distfiles.gentoo.org/releases/amd64/autobuilds/`curl http://distfiles.gentoo.org/releases/amd64/autobuilds/latest-stage3-amd64-nomultilib.txt -q | tail -n 1` )")
 
         os.system("tar xjpf stage3*.tar.bz2")
-        os.system("rm -rf stage3*.tar.bz2")
+#        os.system("rm -rf stage3*.tar.bz2")
 
         os.system("echo \"nameserver 8.8.8.8\" > /mnt/gentoo/etc/resolv.conf")
         os.system("wget '' -O /mnt/gentoo/usr/src/.config")
 
-        os.system('mount -t proc proc /mnt/gentoo/proc')
-        os.system('mount --rbind /sys /mnt/gentoo/sys')
-        os.system('mount --rbind /dev /mnt/gentoo/dev')
-        os.system('chroot /mnt/gentoo /bin/bash')
+ #       os.system('mount -t proc proc /mnt/gentoo/proc')
+  #      os.system('mount --rbind /sys /mnt/gentoo/sys')
+   #     os.system('mount --rbind /dev /mnt/gentoo/dev')
+    #    os.system('chroot /mnt/gentoo /bin/bash')
 
     def installPortage(self):
-        os.system("wget 'http://master/config_files/12/portage' -O /etc/portage/make.conf")
+
+        f = open('/etc/portage/make.conf')
+        f.write((
+            "# These settings were set by the catalyst build script that automatically\n"
+            "# built this stage.\n"
+            "# Please consult /usr/share/portage/config/make.conf.example for a more\n"
+            "# detailed example.\n"
+            ""
+            ))
+        cFlags = "-O2"
+        makeOps = ""
+        numCpus = 1
+
+        try:
+            if self.serverConfig['compileNative']:
+                cFlags += " -march=native"
+        except IndexError:
+            cFlags += ""
+
+        try:
+            if not self.serverConfig['isLowMemoryEnvironment']:
+                cFlags += " -pipe"
+        except IndexError:
+            cFlags += ""
+
+        try:
+            makeOps = "-j" + self.serverConfig['numCpus']
+            numCpus = self.serverConfig['numCpus']
+        except IndexError:
+            cFlags += ""
+
+        f.write((
+            "CFLAGS=\"" + cFlags + "\"\n"
+            "MAKEOPS=\"" + makeOps + "\"\n"
+            "\n"
+            "EMERGE_DEFAULT_OPTS=\"--jobs=" + numCpus + " --load-average=" + numCpus + "\n"
+            "\n"
+            "USE=\"" + self.serverConfig['useFlags'] + "\"\n"
+            "\n"
+            "GENTOO_MIRRORS=\"ftp://ftp.ussg.iu.edu/pub/linux/gentoo http://ftp.ucsb.edu/pub/mirrors/linux/gentoo/\"\n"
+            "SYNC=\"rsync://rsync25.us.gentoo.org/gentoo-portage\"\n"
+        ))
+
+        try:
+            if self.serverConfig['mode'] == "unstable":
+                arch = "~" + arch
+        except IndexError:
+            arch = self.serverConfig['arch']
+
+        f.write((
+            "RUBY_TARGETS=\"ruby19\"\n"
+            "\n"
+            "CXXFLAGS=\"${CFLAGS}\"\n"
+            "\n"
+            "PORTDIR=\"/usr/portage\"\n"
+            "DISTDIR=\"${PORTDIR}/distfiles\"\n"
+            "PKGDIR=\"${PORTDIR}/packages\"\n"
+        ))
+        f.close()
         os.system("echo 'sys-apps/dbus -systemd' > /etc/portage/package.use")
         os.system("echo 'sys-kernel/gentoo-sources ~amd64' > /etc/portage/package.accept_keywords")
         os.system("echo '' > /etc/portage/package.mask")
@@ -92,12 +150,6 @@ class InstallerConfig:
         # Compile application phase
         if app == "pip:aws":
             os.system("pip install awscli")
-            os.system("mkdir -p /root/.aws")
-            os.system(('echo "[default]'
-                'region = us-west-1'
-                'aws_access_key_id = AKIAIFQQ37ZPD4MBBH5A'
-                'aws_secret_access_key = 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'
-                '" > /root/.aws/config'));
         elif app == "sshd":
             os.system('')
 
