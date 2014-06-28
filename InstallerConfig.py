@@ -1,3 +1,5 @@
+from InitManagers.SystemD import SystemD
+import os
 
 class InstallerConfig:
     def __init__(self, serverConfig):
@@ -18,38 +20,39 @@ class InstallerConfig:
 
     def activateLocalNetwork(self):
         try:
-            os.system("ifconfig " + self.serverConfig['networkInfo']['eth0Name'] + " " + self.serverConfig['networkInfo']['publicIp'] ." broadcast ". self.serverConfig['networkInfo']['broadcast'] ." netmask ". self.serverConfig['networkInfo']['netmask'] ." up")
+            os.system("ifconfig " + self.serverConfig['networkInfo']['eth0Name'] + " " + self.serverConfig['networkInfo']['publicIp'] + " broadcast " + self.serverConfig['networkInfo']['broadcast'] + " netmask " + self.serverConfig['networkInfo']['netmask'] + " up")
             os.system("route add default gw " + self.serverConfig['networkInfo']['gateway'])
-			os.system('echo "nameserver ' + self.serverConfig['networkInfo']['nameserver'] + '" > /etc/resolv.conf');
+            os.system('echo "nameserver ' + self.serverConfig['networkInfo']['nameserver'] + '" > /etc/resolv.conf')
 			
         except IndexError:
+            os.system('')
 
-    def syncSystemClock:
+    def syncSystemClock(self):
         os.system("service ntpd stop")
         os.system("ntpdate -s time.nist.gov")
         os.system("service ntpd start")
     
 	
-	def installStage3(self, type):
-	    os.system("cd /mnt/gentoo")
+    def installStage3(self, type):
+        os.system("cd /mnt/gentoo")
 	    
-	    if type == "amd64-hardened+nomultilib":
-			os.system("wget $( echo http://distfiles.gentoo.org/releases/amd64/autobuilds/`curl http://distfiles.gentoo.org/releases/amd64/autobuilds/latest-stage3-amd64-hardened+nomultilib.txt -q | tail -n 1` )")
-		elif type == "amd64-nomultilib":
-			os.system("wget $( echo http://distfiles.gentoo.org/releases/amd64/autobuilds/`curl http://distfiles.gentoo.org/releases/amd64/autobuilds/latest-stage3-amd64-nomultilib.txt -q | tail -n 1` )")
+        if type == "amd64-hardened+nomultilib":
+            os.system("wget $( echo http://distfiles.gentoo.org/releases/amd64/autobuilds/`curl http://distfiles.gentoo.org/releases/amd64/autobuilds/latest-stage3-amd64-hardened+nomultilib.txt -q | tail -n 1` )")
+        elif type == "amd64-nomultilib":
+            os.system("wget $( echo http://distfiles.gentoo.org/releases/amd64/autobuilds/`curl http://distfiles.gentoo.org/releases/amd64/autobuilds/latest-stage3-amd64-nomultilib.txt -q | tail -n 1` )")
 
-		os.system("tar xjpf stage3*.tar.bz2")
-		os.system("rm -rf stage3*.tar.bz2")
+        os.system("tar xjpf stage3*.tar.bz2")
+        os.system("rm -rf stage3*.tar.bz2")
 
-		os.system("echo \"nameserver 8.8.8.8\" > /mnt/gentoo/etc/resolv.conf")
-		os.system("wget '' -O /mnt/gentoo/usr/src/.config")
+        os.system("echo \"nameserver 8.8.8.8\" > /mnt/gentoo/etc/resolv.conf")
+        os.system("wget '' -O /mnt/gentoo/usr/src/.config")
 
         os.system('mount -t proc proc /mnt/gentoo/proc')
         os.system('mount --rbind /sys /mnt/gentoo/sys')
         os.system('mount --rbind /dev /mnt/gentoo/dev')
         os.system('chroot /mnt/gentoo /bin/bash')
 
-    def installPortage:
+    def installPortage(self):
         os.system("wget 'http://master/config_files/12/portage' -O /etc/portage/make.conf")
         os.system("echo 'sys-apps/dbus -systemd' > /etc/portage/package.use")
         os.system("echo 'sys-kernel/gentoo-sources ~amd64' > /etc/portage/package.accept_keywords")
@@ -96,8 +99,9 @@ class InstallerConfig:
                 'aws_secret_access_key = EnmpMTeP4rwseVaCNm7om10fwfWUm7hQu8zAYNxd'
                 '" > /root/.aws/config'));
         elif app == "sshd":
+            os.system('')
 
-        elif app = "php:composer":
+        elif app == "php:composer":
             os.system("curl -sS https://getcomposer.org/installer | php -- --install-dir=/bin")
             os.system("mv /bin/composer.phar /usr/local/bin/composer")
         
@@ -111,31 +115,31 @@ class InstallerConfig:
             'cronie',
             'sshd',
             'iptables',
-		    'fail2ban',
-		    'dev-db/redis',
-		    'www-servers/apache',
-		    'app-antivirus/clamav',
-		    'dev-db/mongodb',
-		    'mariadb',
-		    'mysql',
-		    'iptables',
-		    'syslog-ng',
-		    'sys-fs/mdadm',
-		    'lvm2',
-		    'app-emulation/libvirt'):
-		    self.initManager.activateService(app)
+            'fail2ban',
+            'dev-db/redis',
+            'www-servers/apache',
+            'app-antivirus/clamav',
+            'dev-db/mongodb',
+            'mariadb',
+            'mysql',
+            'iptables',
+            'syslog-ng',
+            'sys-fs/mdadm',
+            'lvm2',
+            'app-emulation/libvirt'):
+            self.initManager.activateService(app)
             
-		# Post-config (where applicable)
-		if app == 'app-emulation/open-vm-tools':
-		    os.system("mkdir -p /mnt/hgfs")
-		elif app == "sys-fs/mdadm":
-		    os.system("mdadm --examine --scan > /etc/mdadm.conf")
-		elif app == "conky":
-		    os.system("rm -rf /etc/conky/conky.conf")
-		    os.system("wget 'http://71.19.151.36/conky.conf' -O /etc/conky/conky.conf")
-		elif app == "genkernel":
-		    os.system("rm /usr/share/genkernel/arch/x86_64/kernel-config")
-		    os.system("ln -s /usr/src/linux/.config /usr/share/genkernel/arch/x86_64/kernel-config")
+        # Post-config (where applicable)
+        if app == 'app-emulation/open-vm-tools':
+            os.system("mkdir -p /mnt/hgfs")
+        elif app == "sys-fs/mdadm":
+            os.system("mdadm --examine --scan > /etc/mdadm.conf")
+        elif app == "conky":
+            os.system("rm -rf /etc/conky/conky.conf")
+            os.system("wget 'http://71.19.151.36/conky.conf' -O /etc/conky/conky.conf")
+        elif app == "genkernel":
+            os.system("rm /usr/share/genkernel/arch/x86_64/kernel-config")
+            os.system("ln -s /usr/src/linux/.config /usr/share/genkernel/arch/x86_64/kernel-config")
         elif app == "mariadb":
             os.system("emerge --config dev-db/mariadb")
         elif app == "app-forensics/chkrootkit":
@@ -151,7 +155,7 @@ class InstallerConfig:
         elif app == "www-servers/apache":
             os.system(("echo '"
                 ""
-                "ServerName " + self.serverConfig['hostname']
+                "ServerName " + self.serverConfig['hostname'] + ""
                 "KeepAlive On"
                 "MaxKeepAliveRequests 100"
                 "KeepAliveTimeout 15"
@@ -167,31 +171,31 @@ class InstallerConfig:
             os.system("sed -i 's/-D DEFAULT_VHOST -D INFO/-D DEFAULT_VHOST -D INFO -D PHP5/g' /etc/conf.d/apache2")
     
     def setInitManager(self, manager):
-		if manager.getName == "systemd":
-		    os.system(("echo '"
-		        "sys-apps/dbus -systemd' >> /etc/portage/package.use"))
-		    self.emerge(manager.getName)
-		    os.system("sed -i 's/sys-apps\/dbus -systemd/ /g' /etc/portage/package.use")
-		    os.system("emerge sys-apps/dbus")
-		else:
-		    self.emerge(manager.getName)
-		self.initManager = manager
+        if manager.getName == "systemd":
+            os.system(("echo '"
+                "sys-apps/dbus -systemd' >> /etc/portage/package.use"))
+            self.emerge(manager.getName)
+            os.system("sed -i 's/sys-apps\/dbus -systemd/ /g' /etc/portage/package.use")
+            os.system("emerge sys-apps/dbus")
+        else:
+            self.emerge(manager.getName)
+            self.initManager = manager
 	
-	def updateAll:
-	    os.system("emerge --update --deep --with-bdeps=y @world")
-	    os.system("emerge @preserved-rebuild")
-	    os.system("emerge --changed-use --deep world")
+    def updateAll(self):
+        os.system("emerge --update --deep --with-bdeps=y @world")
+        os.system("emerge @preserved-rebuild")
+        os.system("emerge --changed-use --deep world")
 	
     def installNetwork(self):
-        os.system("echo '". $this->_server->hostname ."' > /etc/hostname")
-        os.system("echo 'hostname=\"". $this->_server->hostname ."\"' > /etc/conf.d/hostname")
-        os.system("echo \"127.0.0.1 localhost   ". $this->_server->hostname ."\n::1     localhost\n\" > /etc/hosts")
+        os.system("echo '" + self.serverConfig['hostname'] + "' > /etc/hostname")
+        os.system("echo 'hostname=\"" + self.serverConfig['hostname'] + "\"' > /etc/conf.d/hostname")
+        os.system("echo \"127.0.0.1 localhost   " + self.serverConfig['hostname'] + "\n::1     localhost\n\" > /etc/hosts")
         os.system("cd /etc/conf.d")
         
         try:
             self.initManager.activateNetwork(self.server, self.serverConfig['networkInfo']['publicIp'])
-		except IndexError:
-		    this.emerge("net-misc/dhcpcd")
+        except IndexError:
+            this.emerge("net-misc/dhcpcd")
 
     def emergeIptablesFirewall(self, rules):
         self.emerge("iptables")
@@ -204,7 +208,7 @@ class InstallerConfig:
             '-A INPUT -j RH-Firewall-1-INPUT'
             '-A INPUT -i ' + self.serverConfig['networkInfo']['eth0Name'] + ' -p tcp -m state --state RELATED,ESTABLISHED -j ACCEPT'
             '-A FORWARD -j RH-Firewall-1-INPUT'
-            '-A OUTPUT -o ' + self.serverConfig['networkInfo']['eth0Name'] .' -m state --state RELATED,ESTABLISHED -j ACCEPT'
+            '-A OUTPUT -o ' + self.serverConfig['networkInfo']['eth0Name'] + ' -m state --state RELATED,ESTABLISHED -j ACCEPT'
             '-A RH-Firewall-1-INPUT -i lo -j ACCEPT'
             '-A RH-Firewall-1-INPUT -p icmp -m icmp --icmp-type any -j ACCEPT'
             '-A RH-Firewall-1-INPUT -p esp -j ACCEPT'

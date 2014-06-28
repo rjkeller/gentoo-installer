@@ -3,7 +3,7 @@ import fileinput
 import sys
 
 class SystemD:
-    def getName:
+    def getName(self):
         return "systemd"
     def activateService(self, serviceName):
 
@@ -35,7 +35,7 @@ class SystemD:
                 ""
                 "[Install]"
                 "WantedBy=multi-user.target"
-                '" > /usr/lib/systemd/system/hgfs.service'"))
+                "\" > /usr/lib/systemd/system/hgfs.service"))
 
 
         #-- activate the service
@@ -51,7 +51,7 @@ class SystemD:
             serviceName = "apache2"
         elif serviceName == "sys-fs/mdadm":
             serviceName = "mdadm"
-        elif serviceName == "dev-db/mongodb"
+        elif serviceName == "dev-db/mongodb":
             serviceName = "mongodb"
         elif serviceName == "mariadb":
             serviceName = "mysqld"
@@ -84,7 +84,7 @@ class SystemD:
                 "Type=oneshot"
                 "RemainAfterExit=yes"
                 "ExecStart=/bin/ifconfig " + server['networkInfo']['eth0Name'] + " " + server['networkInfo']['publicIp'] + " broadcast " + server['networkInfo']['broadcast'] + " netmask " + self.serverConfig['networkInfo']['netmask'] + " up"
-                "ExecStart=/bin/route add default gw " + self.serverConfig['networkInfo']['gateway']
+                "ExecStart=/bin/route add default gw " + self.serverConfig['networkInfo']['gateway'] + ""
                 ""
                 "[Install]"
                 "WantedBy=multi-user.target"
@@ -93,17 +93,17 @@ class SystemD:
         else:
             #if this is a DHCP connection
             os.system(("echo 'echo \"[Unit]"
-                "Description=DHCP on " + server['networkInfo']['eth0Name']
+                "Description=DHCP on " + server['networkInfo']['eth0Name'] + ""
                 "After=basic.target"
                 ""
                 "[Service]"
                 "Type=oneshot"
                 "RemainAfterExit=yes"
                 "ExecStart=/bin/ifconfig " + server['networkInfo']['eth0Name'] + " up"
-                "ExecStart=/sbin/dhcpcd -B " + server['networkInfo']['eth0Name']
+                "ExecStart=/sbin/dhcpcd -B " + server['networkInfo']['eth0Name'] + ""
                 ""
                 "[Install]"
                 "WantedBy=multi-user.target"
-                '" > /usr/lib/systemd/system/network.' + server['networkInfo']['eth0Name'] + '.service'))
+                "\" > /usr/lib/systemd/system/network." + server['networkInfo']['eth0Name'] + ".service"))
 
         os.system("ln -s /usr/lib/systemd/system/network." + server['networkInfo']['eth0Name'] + ".service /etc/systemd/system/multi-user.target.wants/")
